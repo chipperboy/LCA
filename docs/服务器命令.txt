@@ -1,0 +1,67 @@
+# 重启服务
+sudo systemctl restart jw3-auth-server
+
+# 启动服务
+sudo systemctl start jw3-auth-server
+
+# 停止服务
+sudo systemctl stop jw3-auth-server
+
+# 查看服务状态
+sudo systemctl status jw3-auth-server
+
+# 启用开机自启
+sudo systemctl enable jw3-auth-server
+
+# 禁用开机自启
+sudo systemctl disable jw3-auth-server
+
+# 查看最近20条日志
+sudo journalctl -u jw3-auth-server -n 20 --no-pager
+
+# 查看最近50条日志
+sudo journalctl -u jw3-auth-server -n 50 --no-pager
+
+# 实时查看日志
+sudo journalctl -u jw3-auth-server -f
+
+# 查看今天的日志
+sudo journalctl -u jw3-auth-server --since today --no-pager
+
+# 查看最近1小时的日志
+sudo journalctl -u jw3-auth-server --since "1 hour ago" --no-pager
+# 手动注册硬件ID（替换YOUR_HARDWARE_ID）
+cd /opt/jw3server && source venv/bin/activate && python3 -c "
+import sqlite3
+from datetime import datetime
+conn = sqlite3.connect('jw3_auth.db')
+cursor = conn.cursor()
+hardware_id = 'YOUR_HARDWARE_ID'
+cursor.execute('SELECT * FROM clients WHERE hardware_id = ?', (hardware_id,))
+if cursor.fetchone():
+    print('客户端已存在')
+else:
+    cursor.execute('INSERT INTO clients (hardware_id, registered_at, last_seen, is_active) VALUES (?, ?, ?, ?)', (hardware_id, datetime.utcnow(), datetime.utcnow(), True))
+    conn.commit()
+    print('客户端已注册')
+conn.close()
+"
+
+# 检查端口占用
+sudo ss -tlnp | grep :8000
+
+# 检查进程
+ps aux | grep auth_server
+
+# 强制杀死进程（如果需要）
+sudo pkill -f auth_server.py
+
+# 完整重启和状态检查
+sudo systemctl restart jw3-auth-server && \
+sleep 3 && \
+sudo systemctl status jw3-auth-server && \
+echo "=== 最近日志 ===" && \
+sudo journalctl -u jw3-auth-server -n 10 --no-pager
+
+
+sudo systemctl restart jw3-auth-server  重启服务器

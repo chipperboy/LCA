@@ -1,0 +1,27 @@
+{
+  "universal_resolution_adapter": {
+    "reference_resolution": {
+      "width": 0,
+      "height": 0,
+      "dpi": 96,
+      "scale_factor": 1.0
+    },
+    "cache_settings": {
+      "window_state_timeout": 1.0,
+      "enable_caching": true
+    }
+  },
+  "universal_coordinate_system": {
+    "default_coordinate_type": "REFERENCE",
+    "validation_settings": {
+      "enable_boundary_check": true,
+      "enable_range_validation": true
+    }
+  },
+  "universal_window_manager": {
+    "adjustment_settings": {
+      "default_target_width": 0,
+      "default_target_height": 0
+    }
+  }
+}
