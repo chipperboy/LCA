@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>激活卡密 - JW3授权系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #34495e;
+            --light-color: #ecf0f1;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .activate-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .activate-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .activate-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .activate-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .activate-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .activate-body {
+            padding: 40px 30px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .card-code-input {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .hardware-id-input {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .btn-activate {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-activate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3);
+            color: white;
+        }
+
+        .btn-activate:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-section h5 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .info-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            color: #6c757d;
+        }
+
+        .result-section {
+            display: none;
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .result-section h4 {
+            margin-bottom: 20px;
+        }
+
+        .license-key {
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            word-break: break-all;
+            margin: 20px 0;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .footer-links a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        .card-format-hint {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-top: 8px;
+        }
+
+        .card-format-example {
+            font-family: 'Courier New', monospace;
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        @media (max-width: 576px) {
+            .activate-header {
+                padding: 30px 20px;
+            }
+
+            .activate-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .activate-body {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="activate-container">
+        <div class="activate-card">
+            <div class="activate-header">
+                <i class="bi bi-unlock-fill" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                <h1>激活卡密</h1>
+                <p>使用卡密激活软件授权</p>
+            </div>
+
+            <div class="activate-body">
+                <div class="info-section">
+                    <h5><i class="bi bi-info-circle"></i> 激活说明</h5>
+                    <ul>
+                        <li>请输入您购买的卡密代码和硬件ID</li>
+                        <li>每个卡密只能使用一次，使用后自动绑定硬件ID</li>
+                        <li>激活成功后将获得对应期限的授权码</li>
+                        <li>卡密格式：<span class="card-format-example">CARD-XXXXXXXX-XXXXXXXX-XXXXXXXX</span></li>
+                        <li>硬件ID必须是64字符的SHA256格式</li>
+                    </ul>
+                </div>
+
+                <div id="alertContainer"></div>
+
+                <form id="activateForm">
+                    <div class="mb-4">
+                        <label for="cardCode" class="form-label">
+                            <i class="bi bi-key"></i> 卡密代码
+                        </label>
+                        <input type="text"
+                               class="form-control card-code-input"
+                               id="cardCode"
+                               placeholder="CARD-XXXXXXXX-XXXXXXXX-XXXXXXXX"
+                               maxlength="35"
+                               required>
+                        <div class="card-format-hint">
+                            示例：CARD-A1B2C3D4-E5F6A7B8-C9D0E1F2
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="hardwareId" class="form-label">
+                            <i class="bi bi-cpu"></i> 硬件ID
+                        </label>
+                        <input type="text"
+                               class="form-control hardware-id-input"
+                               id="hardwareId"
+                               placeholder="请输入64字符的SHA256硬件ID"
+                               maxlength="64"
+                               required>
+                        <div class="form-text">
+                            硬件ID必须是64字符的SHA256格式，例如：a1b2c3d4e5f6...
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-activate" id="activateBtn">
+                            <span class="loading">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                激活中...
+                            </span>
+                            <span class="normal-text">
+                                <i class="bi bi-unlock"></i> 立即激活
+                            </span>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="resultSection" class="result-section">
+                    <h4><i class="bi bi-check-circle-fill"></i> 激活成功！</h4>
+                    <p>您的授权码已生成：</p>
+                    <div class="license-key" id="licenseKey"></div>
+                    <div class="mt-3">
+                        <button class="btn copy-btn" onclick="copyLicenseKey()">
+                            <i class="bi bi-clipboard"></i> 复制授权码
+                        </button>
+                    </div>
+                    <div class="mt-4">
+                        <div><strong>授权类型：</strong> <span id="cardType"></span></div>
+                        <div><strong>有效期：</strong> <span id="validityPeriod"></span></div>
+                        <div id="expiresAtContainer" style="margin-top: 10px;">
+                            <small>到期时间：<span id="expiresAt"></span></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <a href="/apply"><i class="bi bi-gift"></i> 申请测试授权</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 表单提交处理
+        document.getElementById('activateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const cardCode = document.getElementById('cardCode').value.trim().toUpperCase();
+            const hardwareId = document.getElementById('hardwareId').value.trim();
+            const activateBtn = document.getElementById('activateBtn');
+            const loading = activateBtn.querySelector('.loading');
+            const normalText = activateBtn.querySelector('.normal-text');
+
+            // 验证卡密格式
+            if (!validateCardCode(cardCode)) {
+                showAlert('请输入正确的卡密格式：CARD-XXXXXXXX-XXXXXXXX-XXXXXXXX', 'danger');
+                return;
+            }
+
+            // 验证硬件ID格式
+            if (!validateHardwareId(hardwareId)) {
+                showAlert('请输入有效的64字符SHA256硬件ID', 'danger');
+                return;
+            }
+
+            // 显示加载状态
+            activateBtn.disabled = true;
+            loading.style.display = 'inline';
+            normalText.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/activate_card', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        card_code: cardCode,
+                        hardware_id: hardwareId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // 激活成功
+                    showResult(data);
+                    document.getElementById('activateForm').style.display = 'none';
+                } else {
+                    // 激活失败
+                    showAlert(data.detail || '激活失败，请稍后重试', 'danger');
+                }
+            } catch (error) {
+                console.error('激活卡密失败:', error);
+                showAlert('网络错误，请检查连接后重试', 'danger');
+            } finally {
+                // 恢复按钮状态
+                activateBtn.disabled = false;
+                loading.style.display = 'none';
+                normalText.style.display = 'inline';
+            }
+        });
+
+        // 验证卡密格式
+        function validateCardCode(cardCode) {
+            // 格式: CARD-XXXXXXXX-XXXXXXXX-XXXXXXXX
+            const pattern = /^CARD-[0-9A-F]{8}-[0-9A-F]{8}-[0-9A-F]{8}$/i;
+            return pattern.test(cardCode);
+        }
+
+        // 验证硬件ID格式
+        function validateHardwareId(hardwareId) {
+            return /^[a-fA-F0-9]{64}$/.test(hardwareId);
+        }
+
+        // 显示警告信息
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+
+            // 根据类型选择合适的图标
+            let icon = 'info-circle';
+            switch(type) {
+                case 'danger':
+                    icon = 'exclamation-triangle';
+                    break;
+                case 'warning':
+                    icon = 'exclamation-triangle';
+                    break;
+                case 'success':
+                    icon = 'check-circle';
+                    break;
+                case 'info':
+                default:
+                    icon = 'info-circle';
+                    break;
+            }
+
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${icon}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHtml;
+
+            // 5秒后自动消失
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+
+        // 显示激活结果
+        function showResult(data) {
+            document.getElementById('licenseKey').textContent = data.license_key;
+
+            // 显示授权类型
+            const cardTypeText = data.card_type === 'EDITOR' ? '编辑器授权' : '执行器授权';
+            document.getElementById('cardType').textContent = cardTypeText;
+
+            // 显示有效期
+            let validityText = '';
+            if (data.is_permanent) {
+                validityText = '永久授权';
+                document.getElementById('expiresAtContainer').style.display = 'none';
+            } else {
+                validityText = `${data.duration_days}天`;
+
+                // 显示到期时间
+                if (data.expires_at) {
+                    const expireDate = new Date(data.expires_at);
+                    const formattedDate = expireDate.toLocaleString('zh-CN', {
+                        timeZone: 'Asia/Shanghai',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    document.getElementById('expiresAt').textContent = formattedDate;
+                }
+            }
+            document.getElementById('validityPeriod').textContent = validityText;
+
+            document.getElementById('resultSection').style.display = 'block';
+
+            // 滚动到结果区域
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // 复制授权码
+        function copyLicenseKey() {
+            const licenseKey = document.getElementById('licenseKey').textContent;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(licenseKey).then(() => {
+                    showAlert('授权码已复制到剪贴板', 'success');
+                });
+            } else {
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = licenseKey;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                document.execCommand('copy');
+                textArea.remove();
+                showAlert('授权码已复制到剪贴板', 'success');
+            }
+        }
+
+        // 卡密输入格式化（自动转大写）
+        document.getElementById('cardCode').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+
+        // 硬件ID输入格式化（只允许十六进制字符）
+        document.getElementById('hardwareId').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^a-fA-F0-9]/g, '');
+        });
+    </script>
+</body>
+</html>

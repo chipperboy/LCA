@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JW3 授权管理系统</title>
+
+    <!-- 资源预加载 -->
+    <link rel="preload" href="/static/css/bootstrap.min.css" as="style">
+    <link rel="preload" href="/static/css/bootstrap-icons.css" as="style">
+    <link rel="preload" href="/static/js/bootstrap.bundle.min.js" as="script">
+    <link rel="preload" href="/static/admin.js?v=1.13" as="script">
+    <link rel="preload" href="/static/fonts/bootstrap-icons.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- 样式表 -->
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #34495e;
+            --light-color: #ecf0f1;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            min-height: 100vh;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 2px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--secondary-color), #5dade2);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card.success {
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, var(--warning-color), #e67e22);
+        }
+
+        .stat-card.danger {
+            background: linear-gradient(135deg, var(--danger-color), #c0392b);
+        }
+
+        .stat-card.info {
+            background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+        }
+
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-weight: 600;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .navbar {
+            background: white !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner-border {
+            color: var(--secondary-color);
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .toolbar-select-wrap {
+            flex: 0 0 auto;
+            min-width: 9rem;
+        }
+
+        .toolbar-select-wrap .form-select {
+            width: 100%;
+        }
+
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--secondary-color), #5dade2);
+            color: white;
+            border-radius: 12px 12px 0 0;
+        }
+
+        /* 移除截断样式，改为完整显示 */
+
+        .hardware-id-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            line-height: 1.4;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .hardware-id-display:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .license-key-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            line-height: 1.4;
+            min-height: 2.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .license-key-display:hover {
+            background-color: #e6f3ff;
+            border-color: #80bfff;
+        }
+
+        .hardware-id-full {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            background-color: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        #licenseDetailsModal .modal-dialog {
+            max-width: 1180px;
+        }
+
+        .license-detail-table th {
+            width: 120px;
+            white-space: nowrap;
+            color: #495057;
+            font-weight: 600;
+            padding-right: 12px;
+        }
+
+        .license-detail-table td {
+            word-break: break-word;
+        }
+
+        .license-detail-key-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .license-detail-key-code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            background-color: #f0f8ff;
+            border: 1px solid #b3d9ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            word-break: break-all;
+            line-height: 1.35;
+        }
+
+        #licenseDetailsModal .table td,
+        #licenseDetailsModal .table th {
+            vertical-align: middle;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -250px;
+                width: 250px;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.show {
+                left: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+
+        /* 客户端状态过滤按钮样式优化 */
+        .btn-check:checked + label {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-check + label {
+            transition: all 0.2s ease;
+        }
+
+        .btn-check:checked + .btn-outline-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-check:checked + .btn-outline-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .btn-check:checked + .btn-outline-secondary {
+            background-color: var(--dark-color);
+            border-color: var(--dark-color);
+        }
+
+        /* 客户端行隐藏动画 */
+        #clients-table tr {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        #clients-table tr[style*="display: none"] {
+            opacity: 0;
+            transform: translateX(-10px);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <button class="btn btn-outline-secondary d-lg-none" type="button" id="sidebarToggle">
+                <i class="bi bi-list"></i>
+            </button>
+            <a class="navbar-brand ms-2" href="#">
+                <i class="bi bi-shield-check text-primary"></i>
+                <strong>JW3 授权管理系统</strong>
+            </a>
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> 管理员
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> 设置</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right"></i> 退出</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-lg-2 d-lg-block sidebar" id="sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#dashboard" data-section="dashboard">
+                                <i class="bi bi-speedometer2"></i> 仪表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#licenses" data-section="licenses">
+                                <i class="bi bi-key"></i> 许可证管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#clients" data-section="clients">
+                                <i class="bi bi-pc-display"></i> 客户端管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#cards" data-section="cards">
+                                <i class="bi bi-credit-card"></i> 卡密管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#users" data-section="users">
+                                <i class="bi bi-people"></i> 用户管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#logs" data-section="logs">
+                                <i class="bi bi-journal-text"></i> 系统日志
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#market" data-section="market">
+                        <i class="bi bi-shop"></i> 脚本共享平台
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#settings" data-section="settings">
+                                <i class="bi bi-gear"></i> 系统设置
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主内容区域 -->
+            <main class="col-lg-10 ms-sm-auto main-content">
+                <!-- 仪表板 -->
+                <div id="dashboard-section" class="content-section" style="display: block;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-speedometer2 text-primary"></i> 仪表板</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-outline-primary" onclick="refreshDashboard()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 统计卡片 -->
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card info">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-uppercase mb-1">总许可证数</h6>
+                                        <h3 class="mb-0" id="total-licenses">-</h3>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-key fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card success">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-uppercase mb-1">活跃许可证</h6>
+                                        <h3 class="mb-0" id="active-licenses">-</h3>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-check-circle fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card warning">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-uppercase mb-1">注册客户端</h6>
+                                        <h3 class="mb-0" id="total-clients">-</h3>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-pc-display fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-3 col-md-6">
+                            <div class="stat-card danger">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="text-uppercase mb-1">在线客户端</h6>
+                                        <h3 class="mb-0" id="online-clients">-</h3>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <i class="bi bi-wifi fs-1"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 系统状态 -->
+                    <div class="row mt-4">
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-activity"></i> 系统状态</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="system-status">
+                                        <div class="loading">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">加载中...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> 最近活动</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="recent-activity">
+                                        <div class="loading">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">加载中...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 许可证管理 -->
+                <div id="licenses-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-key text-primary"></i> 许可证管理</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createLicenseModal">
+                                <i class="bi bi-plus-circle"></i> 创建许可证
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshLicenses()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 25%;">许可证密钥</th>
+                                            <th style="width: 8%;">类型</th>
+                                            <th style="width: 30%;">绑定客户端</th>
+                                            <th style="width: 12%;">创建时间</th>
+                                            <th style="width: 12%;">过期时间</th>
+                                            <th style="width: 8%;">状态</th>
+                                            <th style="width: 5%;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="licenses-table">
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                <div class="loading">
+                                                    <div class="spinner-border" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 客户端管理 -->
+                <div id="clients-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-pc-display text-primary"></i> 客户端管理</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <!-- 客户端状态过滤按钮组 -->
+                            <div class="btn-group me-2" role="group" aria-label="客户端状态过滤">
+                                <input type="radio" class="btn-check" name="clientStatusFilter" id="clientStatusAll" value="all" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary" for="clientStatusAll" onclick="filterClientsByStatus('all')">
+                                    <i class="bi bi-list-ul"></i> 所有
+                                </label>
+
+                                <input type="radio" class="btn-check" name="clientStatusFilter" id="clientStatusOnline" value="online" autocomplete="off">
+                                <label class="btn btn-outline-success" for="clientStatusOnline" onclick="filterClientsByStatus('online')">
+                                    <i class="bi bi-wifi"></i> 在线
+                                </label>
+
+                                <input type="radio" class="btn-check" name="clientStatusFilter" id="clientStatusOffline" value="offline" autocomplete="off">
+                                <label class="btn btn-outline-secondary" for="clientStatusOffline" onclick="filterClientsByStatus('offline')">
+                                    <i class="bi bi-wifi-off"></i> 离线
+                                </label>
+                            </div>
+                            <div class="btn-group me-2">
+                                <button type="button" class="btn btn-outline-info" onclick="showBannedClients()">
+                                    <i class="bi bi-shield-x"></i> 查看封禁
+                                </button>
+                                <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#banHardwareModal">
+                                    <i class="bi bi-shield-x"></i> 封禁硬件ID
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshClients()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- 状态统计栏 -->
+                            <div class="alert alert-info mb-3" id="clientsStatsBar" style="display: none;">
+                                <div class="row text-center">
+                                    <div class="col-md-4">
+                                        <h5 class="mb-0" id="clientsTotal">0</h5>
+                                        <small class="text-muted">总客户端</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h5 class="mb-0 text-success" id="clientsOnline">0</h5>
+                                        <small class="text-muted">在线</small>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h5 class="mb-0 text-secondary" id="clientsOffline">0</h5>
+                                        <small class="text-muted">离线</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 35%;">硬件ID</th>
+                                            <th style="width: 10%;">注册时间</th>
+                                            <th style="width: 10%;">最后活动</th>
+                                            <th style="width: 8%;">许可证数量</th>
+                                            <th style="width: 7%;">状态</th>
+                                            <th style="width: 18%;">封禁状态</th>
+                                            <th style="width: 12%;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="clients-table">
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                <div class="loading">
+                                                    <div class="spinner-border" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 封禁列表区域 -->
+                    <div class="mt-4" id="banned-list-section" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-shield-x text-danger"></i> 封禁硬件ID列表
+                                    <button class="btn btn-sm btn-outline-secondary float-end" onclick="hideBannedList()">
+                                        <i class="bi bi-x"></i> 隐藏
+                                    </button>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 35%;">硬件ID</th>
+                                                <th style="width: 18%;">封禁原因</th>
+                                                <th style="width: 12%;">封禁时间</th>
+                                                <th style="width: 10%;">操作员</th>
+                                                <th style="width: 12%;">过期时间</th>
+                                                <th style="width: 8%;">状态</th>
+                                                <th style="width: 5%;">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="banned-table">
+                                            <tr>
+                                                <td colspan="7" class="text-center">
+                                                    <div class="loading">
+                                                        <div class="spinner-border" role="status">
+                                                            <span class="visually-hidden">加载中...</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 卡密管理 -->
+                <div id="cards-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-credit-card text-primary"></i> 卡密管理</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#generateCardsModal">
+                                <i class="bi bi-plus-circle"></i> 生成卡密
+                            </button>
+                            <button type="button" class="btn btn-outline-info me-2" onclick="showCardBatches()">
+                                <i class="bi bi-box-seam"></i> 批次管理
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshCards()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 卡密统计 -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h6 class="text-muted">总卡密数</h6>
+                                    <h3 id="total-cards" class="text-primary">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h6 class="text-muted">未使用</h6>
+                                    <h3 id="unused-cards" class="text-success">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h6 class="text-muted">已使用</h6>
+                                    <h3 id="used-cards" class="text-info">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-secondary">
+                                <div class="card-body">
+                                    <h6 class="text-muted">已禁用</h6>
+                                    <h3 id="disabled-cards" class="text-secondary">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 过滤器 -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-select" id="cardStatusFilter" onchange="filterCards()">
+                                        <option value="">所有状态</option>
+                                        <option value="unused">未使用</option>
+                                        <option value="used">已使用</option>
+                                        <option value="disabled">已禁用</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" id="cardBatchFilter" onchange="filterCards()">
+                                        <option value="">所有批次</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="cardSearchInput" placeholder="搜索卡密代码..." onkeyup="searchCards()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 卡密列表 -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 22%;">卡密代码</th>
+                                            <th style="width: 8%;">类型</th>
+                                            <th style="width: 8%;">有效期</th>
+                                            <th style="width: 8%;">状态</th>
+                                            <th style="width: 12%;">创建时间</th>
+                                            <th style="width: 12%;">使用时间</th>
+                                            <th style="width: 18%;">使用硬件ID</th>
+                                            <th style="width: 12%;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cards-table">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="loading">
+                                                    <div class="spinner-border" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 批次管理区域 -->
+                    <div class="mt-4" id="batches-section" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-box-seam text-primary"></i> 批次列表
+                                    <button class="btn btn-sm btn-outline-secondary float-end" onclick="hideBatches()">
+                                        <i class="bi bi-x"></i> 隐藏
+                                    </button>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">批次ID</th>
+                                                <th style="width: 10%;">总数</th>
+                                                <th style="width: 10%;">未使用</th>
+                                                <th style="width: 10%;">已使用</th>
+                                                <th style="width: 10%;">有效期</th>
+                                                <th style="width: 12%;">创建时间</th>
+                                                <th style="width: 8%;">创建者</th>
+                                                <th style="width: 15%;">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="batches-table">
+                                            <tr>
+                                                <td colspan="8" class="text-center">
+                                                    <div class="loading">
+                                                        <div class="spinner-border" role="status">
+                                                            <span class="visually-hidden">加载中...</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- 用户管理 -->
+                <div id="users-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-people text-primary"></i> 用户管理</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                                <i class="bi bi-person-plus"></i> 添加用户
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshUsers()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>用户名</th>
+                                            <th>管理员</th>
+                                            <th>绑定硬件ID</th>
+                                            <th>创建时间</th>
+                                            <th>最后登录</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="users-table">
+                                        <tr>
+                                            <td colspan="6" class="text-center">
+                                                <div class="loading">
+                                                    <div class="spinner-border" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统日志 -->
+                <div id="logs-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-journal-text text-primary"></i> 系统日志</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="btn-group me-2">
+                                <select class="form-select" id="logLevel" onchange="filterLogs()">
+                                    <option value="">所有级别</option>
+                                    <option value="INFO">信息</option>
+                                    <option value="WARNING">警告</option>
+                                    <option value="ERROR">错误</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger me-2" onclick="clearLogs()">
+                                <i class="bi bi-trash"></i> 清空日志
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshLogs()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div id="logs-container" style="height: 500px; overflow-y: auto; background-color: #1e1e1e; color: #d4d4d4; font-family: 'Courier New', monospace; padding: 15px; border-radius: 5px;">
+                                <div class="loading text-center">
+                                    <div class="spinner-border text-light" role="status">
+                                        <span class="visually-hidden">加载中...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统设置 -->
+            <!-- 脚本共享平台 -->
+                <div id="market-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-shop text-primary"></i> 脚本共享平台</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <div class="toolbar-select-wrap me-2">
+                                <select class="form-select" id="marketStatusFilter" onchange="refreshMarketPackages()">
+                                    <option value="">全部状态</option>
+                                    <option value="submitted">待审核</option>
+                                    <option value="released">已发布</option>
+                                    <option value="rejected">已拒绝</option>
+                                    <option value="draft">草稿</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshMarketPackages()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle"></i>
+                                当前页面负责共享平台包审核与状态管理，包文件仍由更新服务器提供下载。
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="bi bi-box-seam"></i> 共享平台包列表</h5>
+                            <span class="text-muted small" id="market-summary-text">加载中...</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead>
+                                        <tr>
+                                            <th>包信息</th>
+                                            <th>版本</th>
+                                            <th>状态</th>
+                                            <th>文件</th>
+                                            <th>时间</th>
+                                            <th>下载</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="market-packages-container">
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">加载中...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="settings-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-gear text-primary"></i> 系统设置</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary" onclick="saveSettings()">
+                                <i class="bi bi-check-circle"></i> 保存设置
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-server"></i> 服务器配置</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="serverSettingsForm">
+                                        <div class="mb-3">
+                                            <label for="serverName" class="form-label">服务器名称</label>
+                                            <input type="text" class="form-control" id="serverName" value="JW3授权验证服务端">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="maxClients" class="form-label">最大客户端数量</label>
+                                            <input type="number" class="form-control" id="maxClients" value="1000">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="sessionTimeout" class="form-label">会话超时（分钟）</label>
+                                            <input type="number" class="form-control" id="sessionTimeout" value="60">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="marketUpdateServerBase" class="form-label">共享平台更新服务器地址</label>
+                                            <input type="text" class="form-control" id="marketUpdateServerBase" placeholder="https://update.example.com">
+                                            <div class="form-text">留空则使用相对下载路径。</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="enableLogging" checked>
+                                                <label class="form-check-label" for="enableLogging">
+                                                    启用详细日志记录
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-shield-check"></i> 安全设置</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="securitySettingsForm">
+                                        <div class="mb-3">
+                                            <label for="maxLoginAttempts" class="form-label">最大登录尝试次数</label>
+                                            <input type="number" class="form-control" id="maxLoginAttempts" value="5">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="lockoutDuration" class="form-label">锁定时长（分钟）</label>
+                                            <input type="number" class="form-control" id="lockoutDuration" value="30">
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="enableCSRF" checked>
+                                                <label class="form-check-label" for="enableCSRF">
+                                                    启用CSRF保护
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="enableRateLimit" checked>
+                                                <label class="form-check-label" for="enableRateLimit">
+                                                    启用API速率限制
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-shield-lock"></i> 管理员密码管理</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="changePasswordForm">
+                                        <div class="mb-3">
+                                            <label for="currentPassword" class="form-label">当前密码</label>
+                                            <input type="password" class="form-control" id="currentPassword" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="newPassword" class="form-label">新密码</label>
+                                            <input type="password" class="form-control" id="newPassword" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="confirmNewPassword" class="form-label">确认新密码</label>
+                                            <input type="password" class="form-control" id="confirmNewPassword" required>
+                                        </div>
+                                        <button type="button" class="btn btn-primary w-100" onclick="changeAdminPassword()">
+                                            <i class="bi bi-key"></i> 修改密码
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-shield-check"></i> 二级密码管理</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form id="secondaryPasswordForm">
+                                        <div class="mb-3" id="oldSecondaryPasswordGroup" style="display: none;">
+                                            <label for="oldSecondaryPassword" class="form-label">旧的二级密码</label>
+                                            <input type="password" class="form-control" id="oldSecondaryPassword">
+                                            <div class="form-text text-warning">修改二级密码需要先验证旧密码</div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="secondaryPassword" class="form-label">新的二级密码</label>
+                                            <input type="password" class="form-control" id="secondaryPassword" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="confirmSecondaryPassword" class="form-label">确认二级密码</label>
+                                            <input type="password" class="form-control" id="confirmSecondaryPassword" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="secondaryPasswordDescription" class="form-label">描述</label>
+                                            <input type="text" class="form-control" id="secondaryPasswordDescription" placeholder="可选的描述信息">
+                                        </div>
+                                        <button type="button" class="btn btn-primary w-100" onclick="setSecondaryPassword()">
+                                            <i class="bi bi-shield-plus"></i> <span id="secondaryPasswordButtonText">设置二级密码</span>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-lg-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-toggle-on"></i> 许可证验证开关</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6>密钥验证功能</h6>
+                                            <p class="text-muted mb-2">
+                                                <span id="licenseValidationStatusText">加载中...</span>
+                                            </p>
+                                            <div class="alert alert-info mb-0">
+                                                <i class="bi bi-info-circle"></i>
+                                                <strong>开启状态:</strong>客户端需要注册硬件ID + 验证许可证密钥<br>
+                                                <strong>关闭状态:</strong>客户端只需注册硬件ID,无需验证许可证密钥<br>
+                                                <strong class="text-warning">注意:</strong>关闭授权验证需要输入二级密码
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <div class="form-check form-switch d-flex justify-content-center align-items-center" style="font-size: 2rem;">
+                                                <input class="form-check-input" type="checkbox" role="switch"
+                                                       id="licenseValidationSwitch" style="width: 4rem; height: 2rem;"
+                                                       onchange="toggleLicenseValidation()">
+                                            </div>
+                                            <div class="mt-3">
+                                                <span class="badge bg-secondary" id="licenseValidationBadge">检查中...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> 系统信息</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>服务器版本:</strong></td>
+                                                    <td id="serverVersion">-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Python版本:</strong></td>
+                                                    <td id="pythonVersion">-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>FastAPI版本:</strong></td>
+                                                    <td id="fastapiVersion">-</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>数据库类型:</strong></td>
+                                                    <td id="databaseType">-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>启动时间:</strong></td>
+                                                    <td id="startupTime">-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>运行时长:</strong></td>
+                                                    <td id="uptime">-</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 创建用户模态框 -->
+    <div class="modal fade" id="createUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-person-plus"></i> 添加新用户</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">密码</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">确认密码</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="userHardwareId" class="form-label">绑定硬件ID（可选）</label>
+                            <input type="text" class="form-control" id="userHardwareId" placeholder="64字符SHA256硬件ID">
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="isAdmin">
+                                <label class="form-check-label" for="isAdmin">
+                                    管理员权限
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="createUser()">创建用户</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建许可证模态框 -->
+    <div class="modal fade" id="createLicenseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle"></i> 创建新许可证</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createLicenseForm">
+                        <div class="mb-3">
+                            <label for="licenseType" class="form-label">许可证类型</label>
+                            <select class="form-select" id="licenseType" onchange="toggleCreateLicenseTypeFields()" required>
+                                <option value="EDITOR">编辑器</option>
+                                <option value="EXECUTOR">执行器</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="editorManagedLimitGroup">
+                            <label for="editorManagedLimit" class="form-label">编辑器可管理执行器数量</label>
+                            <input type="number" class="form-control" id="editorManagedLimit" min="0" value="1">
+                            <div class="form-text">填写 0 表示不限制</div>
+                        </div>
+                        <div class="mb-3" id="executorParentKeyGroup" style="display: none;">
+                            <label for="executorParentLicenseKey" class="form-label">上级编辑器授权码</label>
+                            <input type="text" class="form-control" id="executorParentLicenseKey" placeholder="例如: ED-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX">
+                            <div class="form-text">创建执行器授权码时必须指定上级编辑器授权码</div>
+                        </div>
+                        <div class="mb-3" id="executorCreateCountGroup" style="display: none;">
+                            <label for="executorCreateCount" class="form-label">批量创建数量</label>
+                            <input type="number" class="form-control" id="executorCreateCount" min="1" value="1">
+                            <div class="form-text">将按上级编辑器可管理数量校验可创建总量</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="licenseExpireType" class="form-label">有效期类型</label>
+                            <select class="form-select" id="licenseExpireType" onchange="toggleExpireSettings()">
+                                <option value="permanent">永久有效</option>
+                                <option value="custom">自定义期限</option>
+                                <option value="preset">预设期限</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="presetExpireGroup" style="display: none;">
+                            <label for="presetExpire" class="form-label">预设期限</label>
+                            <select class="form-select" id="presetExpire">
+                                <option value="7">7天（试用版）</option>
+                                <option value="30">30天（月度版）</option>
+                                <option value="90">90天（季度版）</option>
+                                <option value="180">180天（半年版）</option>
+                                <option value="365">365天（年度版）</option>
+                                <option value="730">730天（两年版）</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="customExpireGroup" style="display: none;">
+                            <label for="customExpireValue" class="form-label">期限数值</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="customExpireValue" min="1" placeholder="输入数值">
+                                <select class="form-select" id="customExpireUnit" style="max-width: 120px;">
+                                    <option value="days">天</option>
+                                    <option value="weeks">周</option>
+                                    <option value="months">月</option>
+                                    <option value="years">年</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="licenseNotes" class="form-label">备注</label>
+                            <textarea class="form-control" id="licenseNotes" rows="3" placeholder="可选的备注信息"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="createLicense()">创建许可证</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑许可证模态框 -->
+    <div class="modal fade" id="editLicenseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-pencil"></i> 编辑许可证</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editLicenseForm">
+                        <input type="hidden" id="editLicenseId">
+                        <div class="mb-3">
+                            <label for="editLicenseKey" class="form-label">许可证密钥</label>
+                            <input type="text" class="form-control" id="editLicenseKey" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editLicenseType" class="form-label">许可证类型</label>
+                            <select class="form-select" id="editLicenseType" disabled>
+                                <option value="EDITOR">编辑器</option>
+                                <option value="EXECUTOR">执行器</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editExpireType" class="form-label">有效期类型</label>
+                            <select class="form-select" id="editExpireType" onchange="toggleEditExpireSettings()">
+                                <option value="permanent">永久有效</option>
+                                <option value="custom_date">指定到期时间</option>
+                                <option value="extend">延长期限</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="editCustomDateGroup" style="display: none;">
+                            <label for="editExpireDate" class="form-label">到期时间</label>
+                            <input type="datetime-local" class="form-control" id="editExpireDate">
+                        </div>
+                        <div class="mb-3" id="editExtendGroup" style="display: none;">
+                            <label for="editExtendValue" class="form-label">延长期限</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="editExtendValue" min="1" placeholder="输入数值">
+                                <select class="form-select" id="editExtendUnit" style="max-width: 120px;">
+                                    <option value="days">天</option>
+                                    <option value="weeks">周</option>
+                                    <option value="months">月</option>
+                                    <option value="years">年</option>
+                                </select>
+                            </div>
+                            <div class="form-text">在当前到期时间基础上延长</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editClientHardwareId" class="form-label">绑定客户端</label>
+                            <input type="text" class="form-control" id="editClientHardwareId" placeholder="64字符SHA256硬件ID">
+                            <div class="form-text">留空表示解除绑定</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editMaxActivations" class="form-label" id="editMaxActivationsLabel">最大激活数量</label>
+                            <input type="number" class="form-control" id="editMaxActivations" min="1" value="1">
+                        </div>
+                        <div class="mb-3" id="editExecutorParentKeyGroup" style="display: none;">
+                            <label for="editExecutorParentLicenseKey" class="form-label">上级编辑器授权码</label>
+                            <input type="text" class="form-control" id="editExecutorParentLicenseKey" placeholder="留空表示不修改上级关系">
+                            <div class="form-text">仅执行器授权码可设置，填写后将调整归属编辑器</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="editIsActive">
+                                <label class="form-check-label" for="editIsActive">
+                                    启用许可证
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editLicenseNotes" class="form-label">备注</label>
+                            <textarea class="form-control" id="editLicenseNotes" rows="3" placeholder="可选的备注信息"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="updateLicense()">保存更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- 共享平台包详情模态框 -->
+    <div class="modal fade" id="marketPackageDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-box-seam"></i> 共享平台包详情</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="marketPackageDetailsContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- 许可证详情模态框 -->
+    <div class="modal fade" id="licenseDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> 许可证详情</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="licenseDetailsContent">
+                        <!-- 详情内容将通过JavaScript动态填充 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 封禁硬件ID模态框 -->
+    <div class="modal fade" id="banHardwareModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-shield-x"></i> 封禁硬件ID</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="banHardwareForm">
+                        <div class="mb-3">
+                            <label for="banHardwareId" class="form-label">硬件ID</label>
+                            <input type="text" class="form-control" id="banHardwareId"
+                                   placeholder="请输入64字符的SHA256硬件ID" maxlength="64" required>
+                            <div class="form-text">硬件ID必须是64字符的SHA256格式</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="banReason" class="form-label">封禁原因</label>
+                            <textarea class="form-control" id="banReason" rows="3"
+                                      placeholder="请输入封禁原因" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="banDuration" class="form-label">封禁期限</label>
+                            <select class="form-select" id="banDuration">
+                                <option value="">永久封禁</option>
+                                <option value="1">1天</option>
+                                <option value="7">7天</option>
+                                <option value="30">30天</option>
+                                <option value="90">90天</option>
+                                <option value="365">1年</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="banNotes" class="form-label">备注</label>
+                            <textarea class="form-control" id="banNotes" rows="2"
+                                      placeholder="可选的备注信息"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" onclick="banHardwareId()">
+                        <i class="bi bi-shield-x"></i> 确认封禁
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 生成卡密模态框 -->
+    <div class="modal fade" id="generateCardsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-plus-circle"></i> 批量生成卡密</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="generateCardsForm">
+                        <div class="mb-3">
+                            <label for="cardType" class="form-label">卡密类型</label>
+                            <select class="form-select" id="cardType" required>
+                                <option value="EDITOR">编辑器授权</option>
+                                <option value="EXECUTOR">执行器授权</option>
+                            </select>
+                        </div>
+                        <div class="mb-3 d-none" id="executorParentLicenseGroup">
+                            <label for="generateCardParentLicenseKey" class="form-label">上级编辑器授权码</label>
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="generateCardParentLicenseKey"
+                                placeholder="请输入上级编辑器授权码（例如 ED-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX）"
+                                autocomplete="off"
+                            >
+                            <div class="form-text">执行器卡密必须绑定有效的上级编辑器授权码</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="durationDays" class="form-label">有效期（天）</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="durationDays" min="0" value="30" required>
+                                <span class="input-group-text">天</span>
+                            </div>
+                            <div class="form-text">输入0表示永久有效</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">快捷选择</label>
+                            <div class="btn-group w-100" role="group">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDuration(7)">7天</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDuration(30)">30天</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDuration(90)">90天</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDuration(365)">1年</button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDuration(0)">永久</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="quantity" class="form-label">生成数量</label>
+                            <input type="number" class="form-control" id="quantity" min="1" max="1000" value="10" required>
+                            <div class="form-text">最多一次生成1000张卡密</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cardNotes" class="form-label">备注</label>
+                            <textarea class="form-control" id="cardNotes" rows="2" placeholder="可选的备注信息"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="generateCards()">
+                        <i class="bi bi-plus-circle"></i> 生成卡密
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导出卡密模态框 -->
+    <div class="modal fade" id="exportCardsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-download"></i> 导出卡密</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="exportBatchId">
+                    <div class="mb-3">
+                        <label class="form-label">导出格式</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="exportFormat" id="formatTxt" value="txt" checked>
+                            <label class="btn btn-outline-primary" for="formatTxt">TXT格式</label>
+
+                            <input type="radio" class="btn-check" name="exportFormat" id="formatCsv" value="csv">
+                            <label class="btn btn-outline-primary" for="formatCsv">CSV格式</label>
+                        </div>
+                        <div class="form-text mt-2">TXT格式：每行一个卡密，适合上传到发卡平台<br>CSV格式：包含详细信息，适合表格查看</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">导出状态</label>
+                        <select class="form-select" id="exportStatusFilter">
+                            <option value="unused">仅未使用</option>
+                            <option value="">所有状态</option>
+                            <option value="used">仅已使用</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">预览</label>
+                        <textarea class="form-control" id="exportPreview" rows="10" readonly style="font-family: monospace; font-size: 0.9em;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="downloadExport()">
+                        <i class="bi bi-download"></i> 下载文件
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <!-- JavaScript初始化已移至admin.js中 -->
+    <script src="/static/admin.js?v=1.13"></script>
+    <!-- 卡密管理JavaScript -->
+    <script src="/static/card_management.js?v=1.5"></script>
+    <!-- 性能监控脚本（开发模式） -->
+    <script src="/static/performance-monitor.js"></script>
+</body>
+</html>

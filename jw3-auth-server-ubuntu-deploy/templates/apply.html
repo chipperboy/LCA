@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>申请测试授权码</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #34495e;
+            --light-color: #ecf0f1;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .apply-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .apply-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .apply-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .apply-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .apply-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .apply-body {
+            padding: 40px 30px;
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            padding: 15px 20px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .btn-apply {
+            background: linear-gradient(135deg, var(--secondary-color), #5dade2);
+            border: none;
+            border-radius: 12px;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.3);
+            color: white;
+        }
+
+        .btn-apply:disabled {
+            background: #6c757d;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-section h5 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .info-section ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .info-section li {
+            margin-bottom: 8px;
+            color: #6c757d;
+        }
+
+        .hardware-id-input {
+            font-family: 'Courier New', monospace;
+            letter-spacing: 1px;
+        }
+
+        .result-section {
+            display: none;
+            background: linear-gradient(135deg, var(--success-color), #2ecc71);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .result-section h4 {
+            margin-bottom: 20px;
+        }
+
+        .license-key {
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            word-break: break-all;
+            margin: 20px 0;
+        }
+
+        .copy-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 8px;
+            padding: 8px 16px;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .footer-links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .footer-links a {
+            color: var(--secondary-color);
+            text-decoration: none;
+            margin: 0 15px;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+        }
+
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+
+        @media (max-width: 576px) {
+            .apply-header {
+                padding: 30px 20px;
+            }
+
+            .apply-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .apply-body {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="apply-container">
+        <div class="apply-card">
+            <div class="apply-header">
+                <i class="bi bi-key-fill" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                <h1>申请测试授权码</h1>
+                <p>获取7天免费试用授权</p>
+            </div>
+
+            <div class="apply-body">
+                <div class="info-section">
+                    <h5><i class="bi bi-info-circle"></i> 申请说明</h5>
+                    <ul>
+                        <li><strong>测试授权码有效期为7天</strong></li>
+                        <li><span class="text-danger fw-bold">每个硬件ID只能申请一次，过期后不能再次申请</span></li>
+                        <li>如果已有活跃密钥，将直接显示现有密钥信息</li>
+                        <li>仅限已注册的硬件ID申请</li>
+                        <li>测试授权码具有完整的编辑器功能</li>
+                        <li>被封禁的硬件ID无法申请测试授权码</li>
+                        <li><span class="text-warning">如需继续使用，请联系管理员购买正式授权</span></li>
+                    </ul>
+                </div>
+
+                <div id="alertContainer"></div>
+
+                <form id="applyForm">
+                    <div class="mb-4">
+                        <label for="hardwareId" class="form-label">
+                            <i class="bi bi-cpu"></i> 硬件ID
+                        </label>
+                        <input type="text" 
+                               class="form-control hardware-id-input" 
+                               id="hardwareId" 
+                               placeholder="请输入64字符的SHA256硬件ID"
+                               maxlength="64"
+                               required>
+                        <div class="form-text">
+                            硬件ID必须是64字符的SHA256格式，例如：a1b2c3d4e5f6...
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-apply" id="applyBtn">
+                            <span class="loading">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                申请中...
+                            </span>
+                            <span class="normal-text">
+                                <i class="bi bi-send"></i> 申请测试授权码
+                            </span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="checkBtn">
+                            <span class="check-loading" style="display: none;">
+                                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                查询中...
+                            </span>
+                            <span class="check-normal-text">
+                                <i class="bi bi-search"></i> 查看现有授权码
+                            </span>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="resultSection" class="result-section">
+                    <h4><i class="bi bi-check-circle"></i> 申请成功！</h4>
+                    <p>您的测试授权码已生成，有效期7天：</p>
+                    <div class="license-key" id="licenseKey"></div>
+                    <div class="mt-3">
+                        <button class="btn copy-btn" onclick="copyLicenseKey()">
+                            <i class="bi bi-clipboard"></i> 复制授权码
+                        </button>
+                        <button class="btn btn-outline-primary ms-2" id="reapplyBtn" onclick="resetForm()" style="display: none;">
+                            <i class="bi bi-arrow-clockwise"></i> 重新申请
+                        </button>
+                    </div>
+                    <div class="mt-3">
+                        <small>到期时间：<span id="expireTime"></span></small>
+                    </div>
+                </div>
+
+                <div class="footer-links">
+                    <small class="text-muted">如有问题请联系技术支持</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 查看现有授权码按钮处理
+        document.getElementById('checkBtn').addEventListener('click', async function() {
+            const hardwareId = document.getElementById('hardwareId').value.trim();
+            const checkBtn = document.getElementById('checkBtn');
+            const checkLoading = checkBtn.querySelector('.check-loading');
+            const checkNormalText = checkBtn.querySelector('.check-normal-text');
+
+            if (!hardwareId) {
+                showAlert('请先输入硬件ID', 'warning');
+                return;
+            }
+
+            if (!validateHardwareId(hardwareId)) {
+                showAlert('请输入有效的64字符SHA256硬件ID', 'danger');
+                return;
+            }
+
+            // 显示加载状态
+            checkBtn.disabled = true;
+            checkLoading.style.display = 'inline';
+            checkNormalText.style.display = 'none';
+
+            try {
+                const response = await fetch(`/api/check_test_license/${hardwareId}`);
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    if (data.has_license) {
+                        // 有活跃的授权码，显示结果
+                        showResult(data.license_key, data.expires_at, true, data.valid_days, data);
+                        document.getElementById('applyForm').style.display = 'none';
+                    } else {
+                        // 没有活跃的授权码
+                        if (data.can_apply) {
+                            showAlert('未找到活跃的密钥，您可以申请新的测试授权码', 'info');
+                        } else {
+                            showAlert(data.message, 'warning');
+                        }
+                    }
+                } else {
+                    showAlert(data.detail || '查询失败，请稍后重试', 'danger');
+                }
+            } catch (error) {
+                console.error('查询授权码失败:', error);
+                showAlert('网络错误，请检查连接后重试', 'danger');
+            } finally {
+                // 恢复按钮状态
+                checkBtn.disabled = false;
+                checkLoading.style.display = 'none';
+                checkNormalText.style.display = 'inline';
+            }
+        });
+
+        // 表单提交处理
+        document.getElementById('applyForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const hardwareId = document.getElementById('hardwareId').value.trim();
+            const applyBtn = document.getElementById('applyBtn');
+            const loading = applyBtn.querySelector('.loading');
+            const normalText = applyBtn.querySelector('.normal-text');
+            
+            // 验证硬件ID格式
+            if (!validateHardwareId(hardwareId)) {
+                showAlert('请输入有效的64字符SHA256硬件ID', 'danger');
+                return;
+            }
+            
+            // 显示加载状态
+            applyBtn.disabled = true;
+            loading.style.display = 'inline';
+            normalText.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/apply_test_license', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        hardware_id: hardwareId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    // 申请成功或返回现有授权码
+                    showResult(data.license_key, data.expires_at, data.is_existing, data.valid_days, data);
+                    document.getElementById('applyForm').style.display = 'none';
+                } else {
+                    // 申请失败
+                    showAlert(data.detail || '申请失败，请稍后重试', 'danger');
+                }
+            } catch (error) {
+                console.error('申请测试授权码失败:', error);
+                showAlert('网络错误，请检查连接后重试', 'danger');
+            } finally {
+                // 恢复按钮状态
+                applyBtn.disabled = false;
+                loading.style.display = 'none';
+                normalText.style.display = 'inline';
+            }
+        });
+        
+        // 验证硬件ID格式
+        function validateHardwareId(hardwareId) {
+            return /^[a-fA-F0-9]{64}$/.test(hardwareId);
+        }
+        
+        // 显示警告信息
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+
+            // 根据类型选择合适的图标
+            let icon = 'info-circle';
+            switch(type) {
+                case 'danger':
+                    icon = 'exclamation-triangle';
+                    break;
+                case 'warning':
+                    icon = 'exclamation-triangle';
+                    break;
+                case 'success':
+                    icon = 'check-circle';
+                    break;
+                case 'info':
+                default:
+                    icon = 'info-circle';
+                    break;
+            }
+
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${icon}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            alertContainer.innerHTML = alertHtml;
+            
+            // 3秒后自动消失
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+        
+        // 显示申请结果
+        function showResult(licenseKey, expiresAt, isExisting = false, validDays = 7, data = {}) {
+            // 更新标题和描述文本
+            const resultTitle = document.querySelector('#resultSection h4');
+            const resultDescription = document.querySelector('#resultSection p');
+
+            const keyType = data.key_type || 'EDITOR';
+            const isPermanent = data.is_permanent || false;
+            const keyTypeName = keyType === 'EDITOR' ? '编辑器' : '执行器';
+
+            if (isExisting) {
+                if (isPermanent) {
+                    resultTitle.innerHTML = `<i class="bi bi-star-fill"></i> 您已有永久的${keyTypeName}密钥`;
+                    resultDescription.innerHTML = `您的永久${keyTypeName}密钥永不过期，请复制使用：<br><small class="text-muted">永久密钥无需重新申请</small>`;
+                } else {
+                    resultTitle.innerHTML = `<i class="bi bi-info-circle"></i> 您已有活跃的${keyTypeName}密钥`;
+                    resultDescription.innerHTML = `您的${keyTypeName}密钥还有<strong>${validDays}天</strong>有效期，请复制使用：<br><small class="text-danger fw-bold">每个硬件ID只能申请一次，过期后不能再次申请</small>`;
+                }
+            } else {
+                resultTitle.innerHTML = '<i class="bi bi-check-circle"></i> 申请成功！';
+                resultDescription.innerHTML = '您的测试授权码已生成，有效期7天：<br><small class="text-danger fw-bold">请妥善保存，每个硬件ID只能申请一次，过期后不能再次申请</small>';
+            }
+
+            document.getElementById('licenseKey').textContent = licenseKey;
+
+            // 处理过期时间显示
+            const expireTimeElement = document.getElementById('expireTime');
+            if (isPermanent || !expiresAt) {
+                expireTimeElement.textContent = '永久有效';
+                expireTimeElement.style.color = '#28a745';
+                expireTimeElement.style.fontWeight = 'bold';
+            } else {
+                // 使用北京时间显示
+                const expireDate = new Date(expiresAt);
+                expireTimeElement.textContent = expireDate.toLocaleString('zh-CN', {
+                    timeZone: 'Asia/Shanghai',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+                expireTimeElement.style.color = '';
+                expireTimeElement.style.fontWeight = '';
+            }
+
+            document.getElementById('resultSection').style.display = 'block';
+
+            // 滚动到结果区域
+            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // 复制授权码
+        function copyLicenseKey() {
+            const licenseKey = document.getElementById('licenseKey').textContent;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(licenseKey).then(() => {
+                    showAlert('授权码已复制到剪贴板', 'success');
+                });
+            } else {
+                // 降级方案
+                const textArea = document.createElement('textarea');
+                textArea.value = licenseKey;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                document.execCommand('copy');
+                textArea.remove();
+                showAlert('授权码已复制到剪贴板', 'success');
+            }
+        }
+        
+        // 硬件ID输入格式化
+        document.getElementById('hardwareId').addEventListener('input', function(e) {
+            // 只允许十六进制字符
+            e.target.value = e.target.value.replace(/[^a-fA-F0-9]/g, '');
+        });
+    </script>
+</body>
+</html>

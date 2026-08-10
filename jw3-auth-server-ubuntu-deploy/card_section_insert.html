@@ -1,0 +1,155 @@
+<!-- 卡密管理内容区域 - 插入到用户管理(users-section)之前 -->
+
+                <!-- 卡密管理 -->
+                <div id="cards-section" class="content-section" style="display: none;">
+                    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                        <h1 class="h2"><i class="bi bi-credit-card text-primary"></i> 卡密管理</h1>
+                        <div class="btn-toolbar mb-2 mb-md-0">
+                            <button type="button" class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#generateCardsModal">
+                                <i class="bi bi-plus-circle"></i> 生成卡密
+                            </button>
+                            <button type="button" class="btn btn-outline-info me-2" onclick="showCardBatches()">
+                                <i class="bi bi-box-seam"></i> 批次管理
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="refreshCards()">
+                                <i class="bi bi-arrow-clockwise"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 卡密统计 -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body">
+                                    <h6 class="text-muted">总卡密数</h6>
+                                    <h3 id="total-cards" class="text-primary">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body">
+                                    <h6 class="text-muted">未使用</h6>
+                                    <h3 id="unused-cards" class="text-success">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body">
+                                    <h6 class="text-muted">已使用</h6>
+                                    <h3 id="used-cards" class="text-info">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-secondary">
+                                <div class="card-body">
+                                    <h6 class="text-muted">已禁用</h6>
+                                    <h3 id="disabled-cards" class="text-secondary">-</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 过滤器 -->
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <select class="form-select" id="cardStatusFilter" onchange="filterCards()">
+                                        <option value="">所有状态</option>
+                                        <option value="unused">未使用</option>
+                                        <option value="used">已使用</option>
+                                        <option value="disabled">已禁用</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <select class="form-select" id="cardBatchFilter" onchange="filterCards()">
+                                        <option value="">所有批次</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="cardSearchInput" placeholder="搜索卡密代码..." onkeyup="searchCards()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 卡密列表 -->
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 22%;">卡密代码</th>
+                                            <th style="width: 8%;">类型</th>
+                                            <th style="width: 8%;">有效期</th>
+                                            <th style="width: 8%;">状态</th>
+                                            <th style="width: 12%;">创建时间</th>
+                                            <th style="width: 12%;">使用时间</th>
+                                            <th style="width: 18%;">使用硬件ID</th>
+                                            <th style="width: 12%;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cards-table">
+                                        <tr>
+                                            <td colspan="8" class="text-center">
+                                                <div class="loading">
+                                                    <div class="spinner-border" role="status">
+                                                        <span class="visually-hidden">加载中...</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 批次管理区域 -->
+                    <div class="mt-4" id="batches-section" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-box-seam text-primary"></i> 批次列表
+                                    <button class="btn btn-sm btn-outline-secondary float-end" onclick="hideBatches()">
+                                        <i class="bi bi-x"></i> 隐藏
+                                    </button>
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 25%;">批次ID</th>
+                                                <th style="width: 10%;">总数</th>
+                                                <th style="width: 10%;">未使用</th>
+                                                <th style="width: 10%;">已使用</th>
+                                                <th style="width: 10%;">有效期</th>
+                                                <th style="width: 12%;">创建时间</th>
+                                                <th style="width: 8%;">创建者</th>
+                                                <th style="width: 15%;">操作</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="batches-table">
+                                            <tr>
+                                                <td colspan="8" class="text-center">
+                                                    <div class="loading">
+                                                        <div class="spinner-border" role="status">
+                                                            <span class="visually-hidden">加载中...</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>父级授权码子码管理</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f5f7fb;
+        }
+        .container-main {
+            max-width: 1100px;
+            margin: 24px auto;
+        }
+        .mono {
+            font-family: Consolas, Menlo, Monaco, monospace;
+            word-break: break-all;
+        }
+        .card-header {
+            font-weight: 600;
+        }
+        .table td, .table th {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container container-main">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header bg-primary text-white">父级授权码子码管理</div>
+            <div class="card-body">
+                <div id="alertBox"></div>
+                <div class="row g-2">
+                    <div class="col-md-9">
+                        <label for="parentLicenseKey" class="form-label">父级编辑器授权码</label>
+                        <input id="parentLicenseKey" type="text" class="form-control mono" placeholder="请输入 ED- 开头的父级编辑器授权码">
+                    </div>
+                    <div class="col-md-3 d-grid align-items-end">
+                        <button id="btnQuery" class="btn btn-primary mt-md-4" type="button">查询子授权码</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3" id="parentSummaryCard" style="display:none;">
+            <div class="card-header">父级信息</div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-7">
+                        <div>父级授权码：<span id="parentKeyText" class="mono"></span></div>
+                    </div>
+                    <div class="col-md-5">
+                        <div>可管理上限：<span id="managedLimitText">-</span></div>
+                        <div>当前有效子码：<span id="activeCountText">-</span></div>
+                        <div>剩余可新增：<span id="remainingText">-</span></div>
+                    </div>
+                </div>
+                <div class="text-muted small mt-2">说明：此页面仅支持新增/删除父级所辖子授权码，不支持修改可管理数量。</div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-3" id="createCard" style="display:none;">
+            <div class="card-header">新增子授权码</div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <label for="createCount" class="form-label">新增数量</label>
+                        <input id="createCount" type="number" class="form-control" min="1" max="200" value="1">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="expiresDays" class="form-label">有效期（天）</label>
+                        <input id="expiresDays" type="number" class="form-control" min="0" value="30">
+                        <div class="form-text">输入 0 表示永久</div>
+                    </div>
+                    <div class="col-md-3 d-grid align-items-end">
+                        <button id="btnCreate" class="btn btn-success mt-md-4" type="button">新增子授权码</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm" id="childrenCard" style="display:none;">
+            <div class="card-header">所辖子授权码</div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>子授权码</th>
+                                <th>状态</th>
+                                <th>绑定硬件ID</th>
+                                <th>创建时间</th>
+                                <th>过期时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="childrenTableBody">
+                            <tr><td colspan="7" class="text-center text-muted">暂无数据</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentParentKey = "";
+
+        function normalizeKey(text) {
+            return String(text || "").trim().toUpperCase();
+        }
+
+        function showAlert(message, type = "info") {
+            const box = document.getElementById("alertBox");
+            box.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        function setLoading(button, loading) {
+            if (!button) return;
+            button.disabled = loading;
+            if (loading) {
+                button.dataset.rawText = button.textContent;
+                button.textContent = "处理中...";
+            } else {
+                button.textContent = button.dataset.rawText || button.textContent;
+            }
+        }
+
+        function renderParentSummary(parent) {
+            document.getElementById("parentSummaryCard").style.display = "";
+            document.getElementById("createCard").style.display = "";
+            document.getElementById("childrenCard").style.display = "";
+            document.getElementById("parentKeyText").textContent = parent.key_string || "-";
+            document.getElementById("managedLimitText").textContent = parent.is_unlimited ? "不限" : String(parent.managed_executor_limit);
+            document.getElementById("activeCountText").textContent = String(parent.active_executor_count ?? 0);
+            document.getElementById("remainingText").textContent = parent.is_unlimited ? "不限" : String(parent.remaining_count ?? 0);
+        }
+
+        function renderChildren(children) {
+            const tbody = document.getElementById("childrenTableBody");
+            const list = Array.isArray(children) ? children : [];
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无子授权码</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.map(item => {
+                const statusBadge = item.status_text === "有效"
+                    ? '<span class="badge bg-success">有效</span>'
+                    : (item.status_text === "过期"
+                        ? '<span class="badge bg-warning text-dark">过期</span>'
+                        : '<span class="badge bg-secondary">禁用</span>');
+                const hw = item.client_hardware_id ? `<span class="mono">${item.client_hardware_id}</span>` : '<span class="text-muted">未绑定</span>';
+                const expires = item.expires_at || '<span class="text-muted">永久</span>';
+                return `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td class="mono">${item.key_string}</td>
+                        <td>${statusBadge}</td>
+                        <td>${hw}</td>
+                        <td>${item.created_at || '-'}</td>
+                        <td>${expires}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" type="button" onclick="deleteChild(${item.id})">删除</button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        async function queryChildren() {
+            const keyInput = document.getElementById("parentLicenseKey");
+            const parentKey = normalizeKey(keyInput.value);
+            if (!parentKey) {
+                showAlert("请先输入父级编辑器授权码", "warning");
+                return;
+            }
+
+            const btn = document.getElementById("btnQuery");
+            setLoading(btn, true);
+            try {
+                const response = await fetch("/api/parent/licenses/query", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ parent_license_key: parentKey })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.detail || data.message || "查询失败");
+                }
+
+                currentParentKey = parentKey;
+                keyInput.value = parentKey;
+                renderParentSummary(data.parent || {});
+                renderChildren(data.children || []);
+                showAlert("查询成功", "success");
+            } catch (error) {
+                showAlert(`查询失败: ${error.message}`, "danger");
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        async function createChildren() {
+            const parentKey = normalizeKey(currentParentKey || document.getElementById("parentLicenseKey").value);
+            if (!parentKey) {
+                showAlert("请先查询父级授权码", "warning");
+                return;
+            }
+
+            const createCount = Number.parseInt(document.getElementById("createCount").value, 10);
+            const expiresDays = Number.parseInt(document.getElementById("expiresDays").value, 10);
+            if (!Number.isInteger(createCount) || createCount < 1 || createCount > 200) {
+                showAlert("新增数量必须在 1-200 之间", "warning");
+                return;
+            }
+            if (!Number.isInteger(expiresDays) || expiresDays < 0) {
+                showAlert("有效期必须为非负整数", "warning");
+                return;
+            }
+
+            const btn = document.getElementById("btnCreate");
+            setLoading(btn, true);
+            try {
+                const response = await fetch("/api/parent/licenses/create", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        parent_license_key: parentKey,
+                        create_count: createCount,
+                        expires_days: expiresDays
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.detail || data.message || "新增失败");
+                }
+
+                showAlert(`新增成功：${data.created_count} 个子授权码`, "success");
+                await queryChildren();
+            } catch (error) {
+                showAlert(`新增失败: ${error.message}`, "danger");
+            } finally {
+                setLoading(btn, false);
+            }
+        }
+
+        async function deleteChild(childId) {
+            const parentKey = normalizeKey(currentParentKey || document.getElementById("parentLicenseKey").value);
+            if (!parentKey) {
+                showAlert("请先查询父级授权码", "warning");
+                return;
+            }
+            if (!Number.isInteger(Number(childId))) {
+                showAlert("子授权码ID无效", "warning");
+                return;
+            }
+            if (!confirm("确定删除该子授权码吗？此操作不可恢复。")) {
+                return;
+            }
+
+            try {
+                const response = await fetch("/api/parent/licenses/delete", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        parent_license_key: parentKey,
+                        child_license_id: Number(childId)
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.detail || data.message || "删除失败");
+                }
+                showAlert("删除成功", "success");
+                await queryChildren();
+            } catch (error) {
+                showAlert(`删除失败: ${error.message}`, "danger");
+            }
+        }
+
+        document.getElementById("btnQuery").addEventListener("click", queryChildren);
+        document.getElementById("btnCreate").addEventListener("click", createChildren);
+        document.getElementById("parentLicenseKey").addEventListener("input", (event) => {
+            event.target.value = normalizeKey(event.target.value).replace(/\s+/g, "");
+        });
+        window.deleteChild = deleteChild;
+    </script>
+</body>
+</html>
