@@ -24,6 +24,21 @@ images/
 workflows/
 docs/打包发布.txt
 _publish_worktree/
+_publish_worktree_backup/
+
+# Bundled third-party/runtime dependencies (install or download separately)
+AutoHotkey/
+Interception/
+models/
+*.exe
+*.dll
+*.chm
+*.db
+*.bak
+*.dep_versions.txt
+OLA/*.dll
+OLA/*.chm
+OLA/*.db
 
 backups/
 __tmp_*/
